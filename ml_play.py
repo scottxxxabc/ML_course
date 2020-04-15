@@ -1,7 +1,7 @@
 """
 The template of the main script of the machine learning process
 """
-
+import random
 import games.arkanoid.communication as comm
 from games.arkanoid.communication import ( \
     SceneInfo, GameStatus, PlatformAction
@@ -27,6 +27,7 @@ def ml_loop():
     ml_loop.ball_prev=ball_pos
     # 2. Inform the game process that ml process is ready before start the loop.
     comm.ml_ready()
+    
 
     
     # 3. Start an endless loop.
@@ -50,9 +51,13 @@ def ml_loop():
         # 3.3. Put the code here to handle the scene information
 
         # 3.4. Send the instruction for this frame to the game process
+        
         if not ball_served:
-            comm.send_instruction(scene_info.frame, PlatformAction.SERVE_TO_LEFT)
-            ball_served = True
+            if  scene_info.platform[0] >50 :
+                comm.send_instruction(scene_info.frame, PlatformAction.MOVE_LEFT)
+            else :
+                comm.send_instruction(scene_info.frame, PlatformAction.SERVE_TO_RIGHT)
+                ball_served = True
         else:  
             if ball_speed[1] > 0:    
                 ball_pos_predict=ball_pos
@@ -68,9 +73,10 @@ def ml_loop():
                         ball_speed[0] = -abs(ball_speed[0])
                 print(ball_speed)
                 print(ball_pos_predict)
-                if scene_info.platform[0]+20>ball_pos_predict[0]:
+                platforn_d=scene_info.platform[0]+20
+                if platforn_d>ball_pos_predict[0] or platforn_d>177:
                     comm.send_instruction(scene_info.frame, PlatformAction.MOVE_LEFT)
-                elif scene_info.platform[0]+20<ball_pos_predict[0]:
+                elif platforn_d<ball_pos_predict[0] or  platforn_d<23:
                     comm.send_instruction(scene_info.frame, PlatformAction.MOVE_RIGHT)
                 else:
                     comm.send_instruction(scene_info.frame, PlatformAction.NONE)
